@@ -44,7 +44,7 @@ if __name__ == '__main__':
             learning_rate_discriminator = 0.0002,
             save_frequency = 1,
             save_path = SAVE_PATH,
-            device = "cpu", #device
+            device = device
         )
         
     cogan_training = COGANTraining(state_cogan)

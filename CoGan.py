@@ -132,7 +132,7 @@ class COGANTraining :
                 
                 # line 9 :
                 self.state.optimizer_discriminator.zero_grad()
-                discriminator_loss.backward()
+                discriminator_loss.backward(retain_graph = True)
                 self.state.optimizer_discriminator.step()
                 
                 discriminator_loss_list.append(discriminator_loss.item())
@@ -157,7 +157,7 @@ class COGANTraining :
                 for i in range(self.state.nb_generator) :
                     loss_generator = (-self.state.discriminator(x_b[i]) + self.state.gamma*(1 - delta)).mean()
                     self.state.optimizer_generator[i].zero_grad()
-                    loss_generator.backward(retain_graph=True)
+                    loss_generator.backward()
                     self.state.optimizer_generator[i].step()
                     generator_loss_list.append(loss_generator.item())
             # line 16 :
@@ -166,7 +166,7 @@ class COGANTraining :
                 for i in range(self.state.nb_generator) :
                     loss_generator = -self.state.discriminator(x_b[i]).mean()
                     self.state.optimizer_generator[i].zero_grad()
-                    loss_generator.backward(retain_graph=True)
+                    loss_generator.backward()
                     self.state.optimizer_generator[i].step()
                     generator_loss_list.append(loss_generator.item())
                     
