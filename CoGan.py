@@ -144,9 +144,9 @@ class COGANTraining :
             z = torch.randn(self.state.nb_generator , self.state.batch_size , 128).to(self.state.device)
 
             # line 12 :
-            x_b = torch.stack([self.state.list_generator[i](z[i].detach()) for i in range(self.state.nb_generator)]) 
-            print(len([self.state.list_generator[i](z[i].detach()) for i in range(self.state.nb_generator)]))
-            print(x_b.shape)
+            # x_b = torch.stack([self.state.list_generator[i](z[i].detach()) for i in range(self.state.nb_generator)]) 
+            x_b = [self.state.list_generator[i](z[i].detach()) for i in range(self.state.nb_generator)]
+            # print(x_b.shape)
             
             generator_loss_list = list()
 
