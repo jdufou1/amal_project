@@ -35,7 +35,7 @@ if __name__ == '__main__':
             beta_2 = 0.9,
             lambda_gp = 10,
             n_d = 3,
-            gamma = 0 ,# 12.5,
+            gamma = 12.5,
             nb_generator = 5,
             batch_size = 500,
             nb_epochs = 10000,
@@ -44,7 +44,7 @@ if __name__ == '__main__':
             learning_rate_discriminator = 0.0002,
             save_frequency = 1,
             save_path = SAVE_PATH,
-            device = device
+            device = "cpu", #device
         )
         
     cogan_training = COGANTraining(state_cogan)
