@@ -145,6 +145,8 @@ class COGANTraining :
 
             # line 12 :
             x_b = torch.stack([self.state.list_generator[i](z[i].detach()) for i in range(self.state.nb_generator)]) 
+            x_b = len([self.state.list_generator[i](z[i].detach()) for i in range(self.state.nb_generator)])
+            print(x_b.shape)
             
             generator_loss_list = list()
 
