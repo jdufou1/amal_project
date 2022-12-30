@@ -144,12 +144,10 @@ class COGANTraining :
             z = torch.randn(self.state.nb_generator , self.state.batch_size , 128).to(self.state.device)
 
             # line 12 :
-            x_b = torch.stack([self.state.list_generator[i](z[i]) for i in range(self.state.nb_generator)]) 
+            x_b = torch.stack([self.state.list_generator[i](z[i].detach()) for i in range(self.state.nb_generator)]) 
             
             generator_loss_list = list()
 
-            
-            
             # line 13 :
             if self.state.gamma != 0 :
                 delta = 0.0
