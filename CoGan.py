@@ -155,7 +155,7 @@ class COGANTraining :
                 delta = 0.0
                 for i in range(self.state.nb_generator) :
                     for j in range(i + 1 , self.state.nb_generator) :
-                        delta += tvd_loss( self.state.classifier(x_b[i]) , self.state.classifier(x_b[j]) )
+                        delta += tvd_loss( self.state.classifier(x_b[i]) , self.state.classifier(x_b[j]) ).detach()
                 delta /= self.state.nb_generator
 
                 for i in range(self.state.nb_generator) :
