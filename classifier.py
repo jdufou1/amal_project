@@ -131,19 +131,20 @@ class ClassifierTraining :
             
             if epoch % self.state.save_frequency == 0 :
                 self.save_model()
-                score = self.test_training(data_l)
+                score = self.test_training(data_loader,len(data_l))
                 
                 end_time = time.time()
                 total_time = end_time - start_time
                 start_time = time.time()
                 print(f"[LOG] : {self.state.current_epoch}/{self.state.nb_epochs} - train acc : {score} - train loss : {losses.mean()} - time : {round(total_time,3)}s")
 
-    def test_training(self,data : list) :
-        X_t = torch.stack([item[0] for item in data]).to(self.state.device)
-        y_t = torch.Tensor([item[1] for item in data]).to(self.state.device)
-        y_hat = self.state.classifier(X_t).argmax(axis=1)
-        results = (y_hat == y_t)
-        score = results.sum() / len(results)
+    def test_training(self,data_loader,size) : 
+        score = 0.0
+        for X,y in data_loader :
+            y_hat = self.state.classifier(X).argmax(axis=1)
+            results = (y_hat == y)
+            score += results.sum() 
+        score /= size
         self.writer.add_scalar('train score', score, self.state.current_epoch)
         return score
 
