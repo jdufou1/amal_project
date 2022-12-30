@@ -17,7 +17,7 @@ import torch.nn as nn
 import numpy as np
 import time
 
-
+torch.autograd.set_detect_anomaly(True)
 
 from torch.utils.tensorboard import SummaryWriter
 
@@ -148,7 +148,7 @@ class COGANTraining :
             
             generator_loss_list = list()
 
-            torch.autograd.set_detect_anomaly(True)
+            
             
             # line 13 :
             if self.state.gamma != 0 :
