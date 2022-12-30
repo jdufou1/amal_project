@@ -23,13 +23,13 @@ if __name__ == '__main__':
         state_cogan = torch.load(SAVE_PATH)
     else :
         device =  torch.device("cuda" if torch.cuda.is_available() else "cpu")
-        classifier = torch.load(CLASSIFIER_MODEL_PATH)
+        state_classifier = torch.load(CLASSIFIER_MODEL_PATH)
         
         discriminator = Discriminator()
         generator = Generator()
         
         state_cogan = StateCOGAN(
-            classifier = classifier,
+            classifier = state_classifier.classifier,
             discriminator = discriminator,
             beta_1 = 0.5,
             beta_2 = 0.9,

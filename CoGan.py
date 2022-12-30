@@ -43,7 +43,7 @@ class StateCOGAN(object) :
         
         self.classifier = classifier.to(device)
         self.discriminator = discriminator.to(device)
-        self.list_generator = [Generator() for _ in range(nb_generator)]
+        self.list_generator = [Generator().to(device) for _ in range(nb_generator)]
         self.beta_1 = beta_1
         self.beta_2 = beta_2
         self.lambda_gp = lambda_gp
@@ -116,8 +116,8 @@ class COGANTraining :
 
                 # line 3 :
                 data_sampled = random.sample(data_list , k = self.state.batch_size)
-                x = torch.stack([item[0][0] for item in data_sampled]).unsqueeze(-1).transpose(1,3)
-                z = torch.randn(self.state.nb_generator , self.state.batch_size // self.state.nb_generator , 128)
+                x = torch.stack([item[0][0] for item in data_sampled]).unsqueeze(-1).transpose(1,3).to(self.state.device)
+                z = torch.randn(self.state.nb_generator , self.state.batch_size // self.state.nb_generator , 128).to(self.state.device)
                 eps = random.random() # uniform sampling in [0-1]
                 
                 # line 5 & 6:
@@ -139,7 +139,7 @@ class COGANTraining :
                 
             
             # line 11 :
-            z = torch.randn(self.state.nb_generator , self.state.batch_size , 128)
+            z = torch.randn(self.state.nb_generator , self.state.batch_size , 128).to(self.state.device)
 
             # line 12 :
             x_b = torch.stack([self.state.generator(z[i]) for i in range(self.state.nb_generator)]) 
