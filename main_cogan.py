@@ -42,7 +42,7 @@ if __name__ == '__main__':
             current_epoch = 0,
             learning_rate_generator = 0.0002,
             learning_rate_discriminator = 0.0002,
-            save_frequency = 10,
+            save_frequency = 1,
             save_path = SAVE_PATH,
             device = device
         )

@@ -121,7 +121,7 @@ class COGANTraining :
                 eps = random.random() # uniform sampling in [0-1]
                 
                 # line 5 & 6:
-                x_b = torch.stack([self.state.list_generator(z[i]) for i in range(self.state.nb_generator)]).reshape(self.state.batch_size, 1 , 32 , 32)
+                x_b = torch.stack([self.state.list_generator[i](z[i]) for i in range(self.state.nb_generator)]).reshape(self.state.batch_size, 1 , 32 , 32)
 
                 # line 7 : 
                 x_hat = eps * x + (1 - eps) * x_b
@@ -142,7 +142,7 @@ class COGANTraining :
             z = torch.randn(self.state.nb_generator , self.state.batch_size , 128).to(self.state.device)
 
             # line 12 :
-            x_b = torch.stack([self.state.generator(z[i]) for i in range(self.state.nb_generator)]) 
+            x_b = torch.stack([self.state.list_generator[i](z[i]) for i in range(self.state.nb_generator)]) 
             
             generator_loss_list = list()
             
