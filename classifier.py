@@ -10,6 +10,7 @@ ethan abitbol
 import torch
 import torch.nn as nn
 import numpy as np
+import time
 
 from tqdm import tqdm
 from torch.utils.tensorboard import SummaryWriter
@@ -99,6 +100,8 @@ class ClassifierTraining :
         data_loader = torch.utils.data.DataLoader(data,batch_size=64,shuffle=True)
         data_l = list(data)
         
+        start_time = time.time()
+        
         for epoch in range(self.state.current_epoch, self.state.nb_epochs) :
             
             self.state.current_epoch = epoch
@@ -130,7 +133,10 @@ class ClassifierTraining :
                 self.save_model()
                 score = self.test_training(data_l)
                 
-                print(f"[LOG] : {self.state.current_epoch}/{self.state.nb_epochs} - train acc : {score} - train loss : {losses.mean()}")
+                end_time = time.time()
+                total_time = end_time - start_time
+                start_time = time.time()
+                print(f"[LOG] : {self.state.current_epoch}/{self.state.nb_epochs} - train acc : {score} - train loss : {losses.mean()} - time : {round(total_time,3)}s")
 
     def test_training(self,data : list) :
         X_t = torch.stack([item[0] for item in data]).to(self.state.device)
