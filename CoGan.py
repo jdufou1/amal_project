@@ -17,6 +17,8 @@ import torch.nn as nn
 import numpy as np
 import time
 
+
+
 from torch.utils.tensorboard import SummaryWriter
 
 class StateCOGAN(object) :
@@ -145,6 +147,8 @@ class COGANTraining :
             x_b = torch.stack([self.state.list_generator[i](z[i]) for i in range(self.state.nb_generator)]) 
             
             generator_loss_list = list()
+
+            torch.autograd.set_detect_anomaly(True)
             
             # line 13 :
             if self.state.gamma != 0 :
