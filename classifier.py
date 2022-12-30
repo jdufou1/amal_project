@@ -141,7 +141,10 @@ class ClassifierTraining :
     def test_training(self,data_loader,size) : 
         score = 0.0
         for X,y in data_loader :
+            X = X.to(self.state.device)
+            y = y.to(self.state.device)
             y_hat = self.state.classifier(X).argmax(axis=1)
+            print(y_hat.shape,y.shape)
             results = (y_hat == y)
             score += results.sum() 
         score /= size
