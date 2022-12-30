@@ -134,7 +134,7 @@ class COGANTraining :
                 
                 # line 9 :
                 self.state.optimizer_discriminator.zero_grad()
-                discriminator_loss.backward(retain_graph = True)
+                discriminator_loss.backward()
                 self.state.optimizer_discriminator.step()
                 
                 discriminator_loss_list.append(discriminator_loss.item())
