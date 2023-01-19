@@ -22,7 +22,7 @@ if __name__ == '__main__':
         state_classifier = StateClassifier(
             classifier = classifier,
             batch_size = 64,
-            nb_epochs = 100000,
+            nb_epochs = 10,
             current_epoch = 0,
             learning_rate = 1e-3,
             save_frequency = 1,

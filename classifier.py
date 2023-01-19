@@ -97,7 +97,7 @@ class ClassifierTraining :
         
     def training(self,data) :
         
-        data_loader = torch.utils.data.DataLoader(data,batch_size=self.batch_size,shuffle=True)
+        data_loader = torch.utils.data.DataLoader(data,batch_size=self.state.batch_size,shuffle=True)
         data_l = list(data)
         
         start_time = time.time()

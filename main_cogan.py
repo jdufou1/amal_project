@@ -28,6 +28,9 @@ if __name__ == '__main__':
         discriminator = Discriminator()
         generator = Generator()
         
+        """
+        HPs of the paper
+
         state_cogan = StateCOGAN(
             classifier = state_classifier.classifier,
             discriminator = discriminator,
@@ -38,7 +41,7 @@ if __name__ == '__main__':
             gamma = 12.5,
             nb_generator = 5,
             batch_size = 500,
-            nb_epochs = 10000,
+            nb_epochs = 70,
             current_epoch = 0,
             learning_rate_generator = 0.0002,
             learning_rate_discriminator = 0.0002,
@@ -46,6 +49,28 @@ if __name__ == '__main__':
             save_path = SAVE_PATH,
             device = device
         )
+        """
+
+        state_cogan = StateCOGAN(
+            classifier = state_classifier.classifier,
+            discriminator = discriminator,
+            beta_1 = 0.5,
+            beta_2 = 0.9,
+            lambda_gp = 10,
+            n_d = 3,
+            gamma = 0,
+            nb_generator = 2,
+            batch_size = 500,
+            nb_epochs = 70,
+            current_epoch = 0,
+            learning_rate_generator = 0.0002,
+            learning_rate_discriminator = 0.0002,
+            save_frequency = 1,
+            save_path = SAVE_PATH,
+            device = device
+        )
+
+
         
     cogan_training = COGANTraining(state_cogan)
     

@@ -103,9 +103,9 @@ class COGANTraining :
         
         #data_loader = torch.utils.data.DataLoader(data,batch_size=self.batch_size,shuffle=True)
         #data_l = list(data)
-        
+        data_list = list(data)
         start_time = time.time()
-        
+
         for epoch in range(self.state.current_epoch , self.state.nb_epochs): 
             
             self.state.current_epoch = epoch
@@ -113,8 +113,6 @@ class COGANTraining :
             discriminator_loss_list = list()
             
             for _ in range(self.state.n_d) : 
-                
-                data_list = list(data)
 
                 # line 3 :
                 data_sampled = random.sample(data_list , k = self.state.batch_size)
@@ -129,8 +127,17 @@ class COGANTraining :
                 x_hat = eps * x + (1 - eps) * x_b
                 
                 # line 8 :
-                gradient_x_hat = torch.autograd.grad(outputs=self.state.discriminator(x_hat).mean(),inputs=x_hat)[0]      
-                discriminator_loss = (self.state.discriminator(x_b) - self.state.discriminator(x) + self.state.lambda_gp * (torch.norm(gradient_x_hat) - 1)**2).mean()
+                gradient_x_hat = torch.autograd.grad(outputs=self.state.discriminator(x_hat).sum(),inputs=x_hat)[0]
+                norm = torch.sqrt(torch.sum(torch.mul(gradient_x_hat, gradient_x_hat), dim=[1, 2, 3]))
+
+                """
+                print("x_hat : ",x_hat)
+                print("x_hat shape : ",x_hat.shape)
+                print("gradient_x_hat : ",gradient_x_hat)
+                print("gradient_x_hat shape : ",gradient_x_hat.shape)      
+                input()
+                """
+                discriminator_loss = (self.state.discriminator(x_b) - self.state.discriminator(x) + (self.state.lambda_gp * (norm - 1)**2)).mean()
                 
                 # line 9 :
                 self.state.optimizer_discriminator.zero_grad()
@@ -138,7 +145,6 @@ class COGANTraining :
                 self.state.optimizer_discriminator.step()
                 
                 discriminator_loss_list.append(discriminator_loss.item())
-                
             
             # line 11 :
             z = torch.randn(self.state.nb_generator , self.state.batch_size , 128).to(self.state.device)
@@ -152,6 +158,7 @@ class COGANTraining :
 
             # line 13 :
             if self.state.gamma != 0 :
+                # TVD activation
                 delta = 0.0
                 for i in range(self.state.nb_generator) :
                     for j in range(i + 1 , self.state.nb_generator) :
@@ -168,9 +175,9 @@ class COGANTraining :
             else :
                 # line 19 :
                 for i in range(self.state.nb_generator) :
-                    loss_generator = -self.state.discriminator(x_b[i]).mean()
+                    loss_generator = - self.state.discriminator(x_b[i]).mean()
                     self.state.optimizer_generator[i].zero_grad()
-                    loss_generator.backward(retain_graph = True)
+                    loss_generator.backward()
                     self.state.optimizer_generator[i].step()
                     generator_loss_list.append(loss_generator.item())
                     
@@ -180,8 +187,14 @@ class COGANTraining :
             for i in range(self.state.nb_generator) :
                 name = "loss generator "+str(i)
                 self.writer.add_scalar(name, generator_loss_list[i], self.state.current_epoch)
-            self.writer.add_scalar('loss discriminator', generator_loss_list.mean(), self.state.current_epoch)
+                print(name," : ",generator_loss_list[i])
+            self.writer.add_scalar('loss discriminator', discriminator_loss_list.mean(), self.state.current_epoch)
+            self.writer.add_scalar('loss generator', generator_loss_list.mean(), self.state.current_epoch)
             
+            print('loss discriminator : ', discriminator_loss_list.mean())
+            print('loss generator : ', generator_loss_list.mean())
+            # input()
+
             if epoch % self.state.save_frequency == 0 :
                 self.save_model()
                 
@@ -189,7 +202,7 @@ class COGANTraining :
                 total_time = end_time - start_time
                 start_time = time.time()
                 
-                print(f"[LOG] : {self.state.current_epoch}/{self.state.nb_epochs} - generators loss : {generator_loss_list.mean()} - discriminator loss : {discriminator_loss_list.mean()}- time : {round(total_time,3)}s")
+                print(f"[LOG] : {self.state.current_epoch}/{self.state.nb_epochs} - generators loss : {generator_loss_list.mean()} - discriminator loss : {discriminator_loss_list.mean()} - time : {round(total_time,3)}s")
 
                 
     def save_model(self) :
