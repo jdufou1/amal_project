@@ -76,7 +76,11 @@ if __name__ == '__main__':
     
     data_mnist = torchvision.datasets.MNIST(root='./data',transform=transforms.Compose([
                 transforms.Resize((32, 32)),
-                transforms.ToTensor()
+                transforms.ToTensor(),
+                transforms.Normalize((.5), (.5))
             ]), download=True,train=True)
     
+
+
+
     cogan_training.training(data_mnist)

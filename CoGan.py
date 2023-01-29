@@ -97,7 +97,6 @@ class COGANTraining :
         print("Nb dicriminator iteration for 1 gen iteration : ", self.state.n_d)
         
         self.writer = SummaryWriter("./logs/amal_project_cogan")
-        
     
     def training(self , data) :
         
