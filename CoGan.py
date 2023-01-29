@@ -50,7 +50,7 @@ class StateCOGAN(object) :
         self.beta_2 = beta_2
         self.lambda_gp = lambda_gp
         self.n_d = n_d
-        self.gamma = gamma
+        self.gamma = gamma  
         self.nb_generator = nb_generator
         self.batch_size = batch_size
         self.nb_epochs = nb_epochs
@@ -59,7 +59,7 @@ class StateCOGAN(object) :
         self.learning_rate_discriminator = learning_rate_discriminator
         
         self.optimizer_generator = [torch.optim.Adam(self.list_generator[i].parameters(), lr=learning_rate_generator , betas=(beta_1 , beta_2)) for i in range(nb_generator)]
-        self.optimizer_discriminator = torch.optim.Adam(discriminator.parameters(), lr=learning_rate_discriminator , betas=(beta_1 , beta_2))
+        self.optimizer_discriminator = torch.optim.Adam(self.discriminator.parameters(), lr=learning_rate_discriminator , betas=(beta_1 , beta_2))
         
         self.save_frequency = save_frequency
         self.save_path = save_path
@@ -68,6 +68,21 @@ class StateCOGAN(object) :
 def tvd_loss(P , Q):
   return 0.5 * (P - Q).abs().sum(axis = 1)   
         
+
+def gradient_penalty(d,real_images, fake_images):
+    
+    alpha = torch.randn(500, 1, 1, 1).to(real_images.device)
+    diff = fake_images - real_images
+    interpolated = real_images + alpha * diff
+
+    # interpolated.requires_grad = True
+    pred = d(interpolated)
+    grads = torch.autograd.grad(pred.sum(), interpolated)[0]
+    #print("grads : ",grads)
+    norm = torch.sqrt((grads**2).view(grads.shape[0], -1).sum(1))
+    gp = ((norm - 1)**2).mean()
+
+    return gp.detach()
         
 class COGANTraining : 
     
@@ -117,6 +132,10 @@ class COGANTraining :
                 data_sampled = random.sample(data_list , k = self.state.batch_size)
                 x = torch.stack([item[0][0] for item in data_sampled]).unsqueeze(-1).transpose(1,3).to(self.state.device)
                 z = torch.randn(self.state.nb_generator , self.state.batch_size // self.state.nb_generator , 128).to(self.state.device)
+                
+                # print("z : ",z.shape,z)
+                # input()
+                
                 eps = random.random() # uniform sampling in [0-1]
                 
                 # line 5 & 6:
@@ -126,9 +145,18 @@ class COGANTraining :
                 x_hat = eps * x + (1 - eps) * x_b
                 
                 # line 8 :
+                """
                 gradient_x_hat = torch.autograd.grad(outputs=self.state.discriminator(x_hat).sum(),inputs=x_hat)[0]
                 norm = torch.sqrt(torch.sum(torch.mul(gradient_x_hat, gradient_x_hat), dim=[1, 2, 3]))
-
+                """
+                # discriminator_loss = ((self.state.discriminator(x_b) - self.state.discriminator(x)) + (self.state.lambda_gp * (norm - 1)**2).unsqueeze(1)).mean()
+                
+                discriminator_loss = (self.state.discriminator(x_b) - self.state.discriminator(x)).mean() #+ (self.state.lambda_gp * (norm - 1)**2)).mean()
+                gp = gradient_penalty(self.state.discriminator,x, x_b) # meme que le code du papier
+                # print("gp : ",gp)
+                discriminator_loss = discriminator_loss + (gp * 10)
+                
+                #print("discriminator_loss : ",discriminator_loss)
                 """
                 print("x_hat : ",x_hat)
                 print("x_hat shape : ",x_hat.shape)
@@ -136,8 +164,18 @@ class COGANTraining :
                 print("gradient_x_hat shape : ",gradient_x_hat.shape)      
                 input()
                 """
-                discriminator_loss = (self.state.discriminator(x_b) - self.state.discriminator(x) + (self.state.lambda_gp * (norm - 1)**2)).mean()
+                """ 
+                print("self.state.discriminator(x_b) : ",self.state.discriminator(x_b).shape)
+                print("self.state.discriminator(x) : ",self.state.discriminator(x).shape)
+                print(" (self.state.lambda_gp * (norm.detach() - 1)**2) : ", (self.state.lambda_gp * (norm.detach() - 1)**2).unsqueeze(1).shape)
+                print("(self.state.discriminator(x_b) - self.state.discriminator(x) + (self.state.lambda_gp * (norm.detach() - 1)**2)) : ",(self.state.discriminator(x_b) - self.state.discriminator(x) + (self.state.lambda_gp * (norm.detach() - 1)**2)).shape)
+                print("(self.state.discriminator(x_b) - self.state.discriminator(x) + (self.state.lambda_gp * (norm.detach() - 1)**2).unsqueeze(1)) : ",(self.state.discriminator(x_b) - self.state.discriminator(x) + (self.state.lambda_gp * (norm.detach() - 1)**2).unsqueeze(1)).shape)
+                """
+                #print("torch.norm(gradient_x_hat) : ",torch.norm(gradient_x_hat).shape,torch.norm(gradient_x_hat))
+                #discriminator_loss = (self.state.discriminator(x_b) - self.state.discriminator(x) + (self.state.lambda_gp * (norm - 1)**2).unsqueeze(1)).mean()
                 
+                # input()
+
                 # line 9 :
                 self.state.optimizer_discriminator.zero_grad()
                 discriminator_loss.backward()
@@ -174,12 +212,14 @@ class COGANTraining :
             else :
                 # line 19 :
                 for i in range(self.state.nb_generator) :
-                    loss_generator = - self.state.discriminator(x_b[i]).mean()
+                    loss_generator = self.state.discriminator(x_b[i]).mean()
                     self.state.optimizer_generator[i].zero_grad()
                     loss_generator.backward()
                     self.state.optimizer_generator[i].step()
                     generator_loss_list.append(loss_generator.item())
                     
+
+
             generator_loss_list = np.array(generator_loss_list)
             discriminator_loss_list = np.array(discriminator_loss_list)
             
